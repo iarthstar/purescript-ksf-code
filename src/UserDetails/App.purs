@@ -219,35 +219,21 @@ render self =
 update :: Self Props State Action -> Action -> StateUpdate Props State Action
 update self@{ state } action = case action of
 
-    OnUsername value -> do
-      let _ = spy "Username" value
-      Update self.state { username = value }
+    OnUsername value -> Update self.state { username = value }
     
     OnPassword value -> Update self.state { password = value }        
     
-    OnFirstName value -> do
-      let _ = spy "FirstName" value
-      Update self.state { firstName = value }
+    OnFirstName value -> Update self.state { firstName = value }
     
-    OnLastName value -> do
-      let _ = spy "LastName" value
-      Update self.state { lastName = value }
+    OnLastName value -> Update self.state { lastName = value }
     
-    OnStreetAddress value -> do
-      let _ = spy "streetAddress" value
-      Update self.state { streetAddress = value }
+    OnStreetAddress value -> Update self.state { streetAddress = value }
     
-    OnStreetName value -> do
-      let _ = spy "streetName" value
-      Update self.state { streetName = value }
+    OnStreetName value -> Update self.state { streetName = value }
 
-    OnZipCode value -> do
-      let _ = spy "zipCode" value
-      Update self.state { zipCode = value }
+    OnZipCode value -> Update self.state { zipCode = value }
     
-    OnCountryCode value -> do
-      let _ = spy "countryCode" value
-      Update self.state { countryCode = value }
+    OnCountryCode value -> Update self.state { countryCode = value }
 
 
     OnLogin -> case state.username, state.password of
