@@ -1,0 +1,28 @@
+{
+  "name": "purescript-ksf-code",
+  "version": "1.0.0",
+  "description": "User Details Management with purescript-react-basic",
+  "main": "index.js",
+  "author": "Arth K. Gajjar",
+  "license": "MIT",
+  "devDependencies": {
+    "create-react-class": "^15.6.3",
+    "parcel-bundler": "^1.10.2",
+    "purescript": "^0.12.1",
+    "purescript-spago": "^0.6.0",
+    "react": ">=15",
+    "react-dom": "^16.7.0"
+  },
+  "scripts": {
+    "start": "parcel index.html",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "spago install",
+    "build-production": "spago build && parcel build index.html",
+    "build": "spago build",
+    "watch": "nodemon --watch src -e js,purs --exec \"yarn build && yarn start\"",
+    "clean": "rm -rf .cache .spago .psci_modules node_modules output dist"
+  },
+  "dependencies": {
+    "react-router-dom": "^5.1.2"
+  }
+}
