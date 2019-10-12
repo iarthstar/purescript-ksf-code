@@ -262,7 +262,8 @@ update self@{ state } action = case action of
                             , Header "Content-Type" "application/json"
                             , Header "accept" "application/json;charset=utf-8"
                             , Header "Access-Control-Allow-Origin" "https://purescript-ksf-code.netlify.com"
-                            ]
+                            , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
+                          ]
                 , data: LoginReq { username, password }
                 }
           UpdateAndSideEffects updatedState (const $ loginUserDetails self loginConfig)
@@ -289,6 +290,7 @@ update self@{ state } action = case action of
                           , Header "Content-Type" "application/json"
                           , Header "Authorization" ("OAuth " <> token) 
                           , Header "Access-Control-Allow-Origin" "https://purescript-ksf-code.netlify.com"
+                          , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
                           ]
               , data: patchDetailsReq
               }
@@ -311,6 +313,7 @@ loginUserDetails self loginConfig = Aff.launchAff_ $ axios loginConfig >>= liftE
                           , Header "accept" "application/json;charset=utf-8"
                           , Header "Authorization" ("OAuth " <> a.token)
                           , Header "Access-Control-Allow-Origin" "https://purescript-ksf-code.netlify.com"
+                          , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
                           ]
               , data: DetailsReq {}
               }
