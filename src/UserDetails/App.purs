@@ -290,7 +290,7 @@ update self@{ state } action = case action of
 
 loginUserDetails :: Axios LoginReq LoginRes => Self Props State Action -> Config LoginReq -> Effect Unit
 loginUserDetails self loginConfig = Aff.launchAff_ $ axios loginConfig >>= liftEffect <<< case _ of
-    Left _ -> pure unit
+    Left _ -> React.send self (LoadState self.state { isLoading = false })
     Right (LoginRes a) -> do
         let detailsConfig = Config
               { url: "https://persona.api.ksfmedia.fi/v1/users/" <> a.uuid
@@ -322,5 +322,5 @@ loginUserDetails self loginConfig = Aff.launchAff_ $ axios loginConfig >>= liftE
 
 submitUserDetails :: Axios PatchDetailsReq PatchDetailsRes => Self Props State Action -> Config PatchDetailsReq -> Effect Unit
 submitUserDetails self userConfig = Aff.launchAff_ $ axios userConfig >>= liftEffect <<< case _ of
-    Left _ -> pure unit
+    Left _ -> React.send self (LoadState self.state { isLoading = false })
     Right (PatchDetailsRes a) -> React.send self (LoadState self.state { isLoading = false })
