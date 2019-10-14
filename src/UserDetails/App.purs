@@ -247,8 +247,8 @@ update self@{ state } action = case action of
                 , headers:  [ Header "Cache-Control" "no-cache"
                             , Header "Content-Type" "application/json"
                             , Header "accept" "application/json;charset=utf-8"
-                            , Header "Access-Control-Allow-Origin" "*"
-                            , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
+                            -- , Header "Access-Control-Allow-Origin" "*"
+                            -- , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
                           ]
                 , data: LoginReq { username, password }
                 }
@@ -275,8 +275,8 @@ update self@{ state } action = case action of
               , headers:  [ Header "accept" "application/json;charset=utf-8"
                           , Header "Content-Type" "application/json"
                           , Header "Authorization" ("OAuth " <> token) 
-                          , Header "Access-Control-Allow-Origin" "*"
-                          , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
+                          -- , Header "Access-Control-Allow-Origin" "*"
+                          -- , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
                           ]
               , data: patchDetailsReq
               }
@@ -298,8 +298,8 @@ loginUserDetails self loginConfig = Aff.launchAff_ $ axios loginConfig >>= liftE
               , headers:  [ Header "Cache-Control" "no-cache"
                           , Header "accept" "application/json;charset=utf-8"
                           , Header "Authorization" ("OAuth " <> a.token)
-                          , Header "Access-Control-Allow-Origin" "*"
-                          , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
+                          -- , Header "Access-Control-Allow-Origin" "*"
+                          -- , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
                           ]
               , data: DetailsReq {}
               }
