@@ -20,7 +20,7 @@ import Effect.Uncurried (EffectFn1, runEffectFn1)
 import React.Basic (JSX, capture_, element, StateUpdate(..), capture, monitor, Self)
 import React.Basic as React
 import React.Basic.DOM as DOM
-import React.Basic.DOM.Events (key, targetChecked, targetValue)
+import React.Basic.DOM.Events (key, targetChecked, preventDefault, targetValue)
 import React.Basic.Events as Events
 import UserDetails.Input as Input
 import UserDetails.Utils (classy)
@@ -69,6 +69,7 @@ data Action
   | OnZipCode (Maybe String)
   | OnCountryCode (Maybe String)
   | OnUsername (Maybe String)
+  | OnUserName (Maybe String)
   | OnPassword (Maybe String)
   | OnLogin
   | OnLogout
@@ -117,6 +118,7 @@ render self =
                                   , placeHolder: "First Name"
                                   , type: "text"
                                   , defaultValue: fromMaybe "" self.state.firstName
+                                  , className: Nothing
                                   }
                               , Input.input 
                                   { onChange: React.send self <<< OnLastName
@@ -124,6 +126,7 @@ render self =
                                   , placeHolder: "Last Name"
                                   , type: "text"
                                   , defaultValue: fromMaybe "" self.state.lastName
+                                  , className: Nothing
                                   }
                               , Input.input 
                                   { onChange: React.send self <<< OnStreetAddress
@@ -131,6 +134,7 @@ render self =
                                   , placeHolder: "Street Address"
                                   , type: "text"
                                   , defaultValue: fromMaybe "" self.state.streetAddress
+                                  , className: Nothing
                                   }
                               , Input.input 
                                   { onChange: React.send self <<< OnStreetName
@@ -138,6 +142,7 @@ render self =
                                   , placeHolder: "Street Name"
                                   , type: "text"
                                   , defaultValue: fromMaybe "" self.state.streetName
+                                  , className: Nothing
                                   }
                               , Input.input 
                                   { onChange: React.send self <<< OnZipCode
@@ -145,6 +150,7 @@ render self =
                                   , placeHolder: "Zip Code"
                                   , type: "text"
                                   , defaultValue: fromMaybe "" self.state.zipCode
+                                  , className: Nothing
                                   }
                               , Input.input 
                                   { onChange: React.send self <<< OnCountryCode
@@ -152,6 +158,7 @@ render self =
                                   , placeHolder: "Country Code"
                                   , type: "text"
                                   , defaultValue: fromMaybe "" self.state.countryCode
+                                  , className: Nothing
                                   }
                               , DOM.br {}
                               , DOM.br {}
@@ -176,50 +183,139 @@ render self =
           ]
         else
           -- | Login View
-          [ classy DOM.div "mdl-grid mdl-grid--no-spacing child"
-              [ classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
-              , classy DOM.div "mdl-cell mdl-cell--4-col-tablet  mdl-cell--4-col-desktop mdl-cell--4-col-phone"
-                  [ classy DOM.div "mdl-card mdl-shadow--4dp"
-                      [ classy DOM.div "mdl-card__supporting-text"
-                          [ DOM.form 
-                              { action: "javascript:void(0);"
-                              , children: 
-                                  [ Input.input 
-                                      { onChange: React.send self <<< OnUsername
-                                      , id: "username"
-                                      , placeHolder: "Username"
-                                      , defaultValue: fromMaybe "" self.state.username
-                                      , type: "text"
-                                      } 
-                                  , DOM.br {}
-                                  , Input.input
-                                      { onChange: React.send self <<< OnPassword
-                                      , id: "password"
-                                      , placeHolder: "Password"
-                                      , defaultValue: fromMaybe "" self.state.password
-                                      , type: "password"
-                                      }
-                                  , DOM.br {}
-                                  , DOM.br {}
-                                  , DOM.button
-                                      { className: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
-                                      , onClick: React.capture_ self OnLogin
-                                      , children: [ DOM.text "LOGIN" ]
-                                      }
-                                  ]
-                              }
-                          ]
-                      ]
-                  ]
-              , classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
-              ]
-          ])
+            [ loginView self ]
+          -- [ classy DOM.div "mdl-grid mdl-grid--no-spacing child"
+          --     [ classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
+          --     , classy DOM.div "mdl-cell mdl-cell--4-col-tablet  mdl-cell--4-col-desktop mdl-cell--4-col-phone"
+          --         [ classy DOM.div "mdl-card mdl-shadow--4dp"
+          --             [ classy DOM.div "mdl-card__supporting-text"
+          --                 [ DOM.form 
+          --                     { action: "javascript:void(0);"
+          --                     , children: 
+          --                         [ Input.input 
+          --                             { onChange: React.send self <<< OnUsername
+          --                             , id: "username"
+          --                             , placeHolder: "Username"
+          --                             , defaultValue: fromMaybe "" self.state.username
+          --                             , type: "text"
+          --                             } 
+          --                         , DOM.br {}
+          --                         , Input.input
+          --                             { onChange: React.send self <<< OnPassword
+          --                             , id: "password"
+          --                             , placeHolder: "Password"
+          --                             , defaultValue: fromMaybe "" self.state.password
+          --                             , type: "password"
+          --                             }
+          --                         , DOM.br {}
+          --                         , DOM.br {}
+          --                         , DOM.button
+          --                             { className: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
+          --                             , onClick: React.capture_ self OnLogin
+          --                             , children: [ DOM.text "LOGIN" ]
+          --                             }
+          --                         ]
+          --                     }
+          --                 ]
+          --             ]
+          --         ]
+          --     , classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
+          --     ]
+          -- ]
+      )
 
+loginView :: Self Props State Action -> JSX
+loginView self = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
+        [ classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
+        , classy DOM.div "mdl-cell mdl-cell--4-col-tablet  mdl-cell--4-col-desktop mdl-cell--4-col-phone"
+            [ classy DOM.div ""
+                [ classy DOM.div "mdl-card__title full-width font-duplex-bold text-center"
+                    [ classy DOM.p "mdl-card__title-text full-width inline-block" 
+                        [ DOM.text "Välkommen till KSF Media’s Mitt Konto"] 
+                    ]
+                , classy DOM.div "mdl-card__supporting-text text-center" 
+                    [ classy DOM.p "full-width inline-block" 
+                        [ DOM.a
+                          { className: "href-link"
+                          , href: "https://www.hbl.fi/fragor-och-svar/"
+                          , children: [ DOM.text "Frågor och svar" ]
+                          }
+                        , DOM.text " • "
+                        , DOM.a
+                          { className: "href-link"
+                          , href: "https://www.hbl.fi/ingen-tidning/"
+                          , children: [ DOM.text "Ingen tidning" ]
+                          }
+                        , DOM.text " • "
+                        , DOM.a
+                          { className: "href-link"
+                          , href: "https://www.hbl.fi/epaper/"
+                          , children: [ DOM.text "Läs e-tidning" ]
+                          }
+                        ]
+                    , classy DOM.p "full-width inline-block"
+                        [ DOM.text "Här kan du göra tillfällig eller permanent adressändring eller göra uppehåll i tidningsutdelningen. Dessutom kan du få allmän information som är relevant för dig som prenumerant." ]
+                    , DOM.br {}
+                    , DOM.br {}
+                    , classy DOM.p "full-width inline-block"
+                        [ DOM.text "Allt du behöver göra för att komma igång är att logga in! " ]
+                    , classy DOM.p "full-width inline-block"
+                        [ DOM.text "Behöver du hjälp? "
+                        , DOM.a
+                          { className: "href-link"
+                          , href: "https://www.hbl.fi/kundservice/"
+                          , children: [ DOM.text "Kundservice" ]
+                          }
+                        ]
+                    , classy DOM.div "mdl-grid mdl-grid--no-spacing"
+                        [ classy DOM.div "mdl-cell mdl-cell--1-col-tablet  mdl-cell--2-col-desktop mdl-cell--0-col-phone" []
+                        , classy DOM.div "mdl-cell mdl-cell--6-col-tablet  mdl-cell--8-col-desktop mdl-cell--4-col-phone" 
+                            [ DOM.form
+                                { action: "javascript:void(0);"
+                                , children: 
+                                    [ Input.input
+                                        { onChange: React.send self <<< OnUsername
+                                        , id: "username"
+                                        , placeHolder: "Username"
+                                        , type: "text"
+                                        , defaultValue: fromMaybe "" self.state.username
+                                        , className: Just "email"
+                                        }
+                                    , Input.input
+                                        { onChange: React.send self <<< OnPassword
+                                        , id: "password"
+                                        , placeHolder: "Password"
+                                        , type: "password"
+                                        , defaultValue: fromMaybe "" self.state.password
+                                        , className: Just "pass"
+                                        }
+                                    , DOM.button
+                                        { className: "button"
+                                        , style: DOM.css { width: "100%" }
+                                        , onClick: React.capture_ self OnLogin
+                                        , children: [ DOM.text "LOGGA IN" ]
+                                        }   
+                                    ]
+        
+                                }
+                            ]
+                        , classy DOM.div "mdl-cell mdl-cell--1-col-tablet  mdl-cell--2-col-desktop mdl-cell--0-col-phone" []
+                        ]
+                    ]
+                ]
+            ]
+        , classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
+        ]
+      
+      
 
 update :: Self Props State Action -> Action -> StateUpdate Props State Action
 update self@{ state } action = case action of
 
     OnUsername value -> Update self.state { username = value }
+    OnUserName value -> do
+      let _ = spy "UserName" value
+      Update self.state { username = value }
     
     OnPassword value -> Update self.state { password = value }        
     

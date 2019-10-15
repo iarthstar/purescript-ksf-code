@@ -31,6 +31,7 @@ type Props =
   , placeHolder :: String
   , defaultValue :: String
   , type :: String
+  , className :: Maybe String
   }
 
 type State = { inputValue :: String }
@@ -63,23 +64,39 @@ input = React.make component
 
       _ -> NoUpdate
 
+-- render :: Self Props State Action -> JSX
+-- render self@{ props } = classy DOM.div "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+--     [ DOM.input
+--       { className: "mdl-textfield__input"
+--       , type: props.type
+--       , id: props.id
+--       , name: props.id
+--       , autoComplete: "off"
+--       , value: props.defaultValue
+--       , onChange
+--       }
+--     , DOM.label
+--       { className: "mdl-textfield__label"
+--       , htmlFor: props.id
+--       , children: [ DOM.text props.placeHolder ]
+--       }
+--     ]
 render :: Self Props State Action -> JSX
-render self@{ props } = classy DOM.div "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
-    [ DOM.input
-      { className: "mdl-textfield__input"
-      , type: props.type
-      , id: props.id
-      , name: props.id
-      , autoComplete: "off"
-      , value: props.defaultValue
-      , onChange
-      }
-    , DOM.label
-      { className: "mdl-textfield__label"
-      , htmlFor: props.id
-      , children: [ DOM.text props.placeHolder ]
-      }
-    ]
+render self@{ props } = DOM.div 
+    { className: "textfield " <> (fromMaybe "" props.className)
+    , style: DOM.css { position: "relative", marginBottom: "10px" }
+    , children: 
+        [ DOM.input
+            { className: ""
+            , type: props.type
+            , id: props.id
+            , name: props.id
+            , autoComplete: "off"
+            , value: props.defaultValue
+            , onChange
+            }
+        ]
+    }
   where 
     onChange = Events.handler (preventDefault >>> Events.merge { targetValue })
       \{ targetValue } -> props.onChange targetValue

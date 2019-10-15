@@ -13,8 +13,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.js"></script>
 
     <style>
+        @font-face {
+            font-family: "Duplex Bold";
+            src: url("./fonts/Duplex-Serif-Web-Bold.woff2") format("woff2")
+        }
+
         body {
             background: whitesmoke;
+        }
+
+        .font-duplex-bold {
+            font-family: "Duplex Bold";
+        }
+
+        .text-center {
+            text-align: center;
         }
 
         #app {
@@ -24,6 +37,14 @@
 
         .todomvc-wrapper {
             visibility: visible !important;
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        .inline-block {
+            display: inline-block;
         }
 
         .mdl-card,
@@ -59,6 +80,65 @@
             position: absolute;
             top: 50%;
             left: 50%;
+        }
+
+        .href-link {
+            color: #337ab7;
+            text-decoration: none;
+        }
+
+        .textfield::before {
+            display: block;
+            content: "";
+            background-color: #aab2bd;
+            background-position: 50%;
+            position: absolute;
+            margin: 1px 1px 1px 1px;
+            height: 31px;
+            width: 40px;
+        }
+
+        .email::before {
+            background-image: url('./images/icon-mail-white.png');
+            background-repeat: no-repeat;
+            background-position: 50% 48%;
+            background-size: 16px 11px;
+        }
+
+        .pass::before {
+            background-image: url('./images/icon-key-white.png');
+            background-repeat: no-repeat;
+            background-position: 50%;
+            background-size: 16px 16px;
+        }
+
+        .button {
+            height: 35px;
+            text-align: center;
+            padding: 0;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            -ms-appearance: none;
+            appearance: none;
+            border: none;
+            border: 1px solid #aab2bd;
+            border-radius: 0;
+            color: #848688;
+            background: #fff;
+            font-size: .8em;
+            font-weight: 300;
+        }
+
+        .textfield {
+            height: 35px;
+        }
+
+        .textfield>input {
+            /* height: calc(100% - 2px); */
+            width: calc(100% - 62px);
+            font-size: .9em;
+            padding: 8px 10px 8px 50px;
+            border: 1px solid #aab2bd;
         }
     </style>
 </head>
