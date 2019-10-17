@@ -57,14 +57,3 @@ genericAxios config =
           Right x -> Right x
           Left err -> Left $ error $ show err
         Left err -> Left err
-
--- defaultAxios :: forall req res. Decode res => Encode req => Method -> String -> Array Header -> req -> Aff (Either Error res)
--- defaultAxios method url headers res = do
---   let config = Config 
---         { url
---         , method
---         , data: res
---         , headers
---         , formData: false
---         }
---   genericAxios config

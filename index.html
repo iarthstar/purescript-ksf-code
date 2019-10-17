@@ -19,7 +19,7 @@
         }
 
         body {
-            background: whitesmoke;
+            background: #f7f5f3;
         }
 
         .font-duplex-bold {
@@ -87,7 +87,7 @@
             text-decoration: none;
         }
 
-        .textfield::before {
+        .login::before {
             display: block;
             content: "";
             background-color: #aab2bd;
@@ -126,16 +126,30 @@
             font-weight: 400;
         }
 
-        .textfield {
+        .login {
             height: 35px;
         }
 
-        .textfield>input {
-            /* height: calc(100% - 2px); */
+        .login > input {
             width: calc(100% - 62px);
             font-size: .9em;
             padding: 8px 10px 8px 50px;
             border: 1px solid #aab2bd;
+        }
+
+        .details {
+            height: 35px;
+        }
+
+        .details > input {
+            width: 98%;
+            font-size: .9em;
+            padding: 8px 10px 8px 10px;
+            border: 1px solid #aab2bd;
+        }
+
+        .details > input:disabled {
+            border: 1px solid #aab2bd00;
         }
     </style>
 </head>

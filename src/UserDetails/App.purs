@@ -40,6 +40,7 @@ type State =
   , streetName    :: Maybe String 
   , zipCode       :: Maybe String 
   , countryCode   :: Maybe String 
+  , email         :: Maybe String 
   , editable      :: Boolean
   , isLoading     :: Boolean
   , loggedIn      :: Boolean
@@ -57,6 +58,7 @@ initialState =
   , streetName    : Nothing
   , zipCode       : Nothing
   , countryCode   : Nothing
+  , email         : Nothing
   , editable      : false
   , isLoading     : false
   , loggedIn      : false
@@ -106,8 +108,7 @@ render self@{ state } =
       ] <> if state.loggedIn 
         then  
           -- | Details View
-          [ detailsView self
-          ]
+          [ detailsView self ]
         else
           -- | Login View
             [ loginView self ]
@@ -161,7 +162,7 @@ loginView self@{ state } = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
                                     , placeHolder: "Username"
                                     , type: "text"
                                     , defaultValue: fromMaybe "" state.username
-                                    , className: Just "email"
+                                    , className: Just "login email"
                                     , disabled: false
                                     }
                                 , Input.input
@@ -170,7 +171,7 @@ loginView self@{ state } = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
                                     , placeHolder: "Password"
                                     , type: "password"
                                     , defaultValue: fromMaybe "" state.password
-                                    , className: Just "pass"
+                                    , className: Just "login pass"
                                     , disabled: false
                                     }
                                 , DOM.button
@@ -210,13 +211,14 @@ detailsView self@{ state } = classy DOM.div "mdl-grid mdl-grid--no-spacing child
                 [ DOM.form 
                   { action: "javascript:void(0);"
                   , children: 
-                      [ Input.input 
+                      [ DOM.text "Name"
+                      , Input.input 
                         { onChange: React.send self <<< OnFirstName
                         , id: "firstName"
                         , placeHolder: "First Name"
                         , type: "text"
                         , defaultValue: fromMaybe "" state.firstName
-                        , className: Nothing
+                        , className: Just "details"
                         , disabled: not state.editable
                         }
                     , Input.input 
@@ -225,16 +227,18 @@ detailsView self@{ state } = classy DOM.div "mdl-grid mdl-grid--no-spacing child
                         , placeHolder: "Last Name"
                         , type: "text"
                         , defaultValue: fromMaybe "" state.lastName
-                        , className: Nothing
+                        , className: Just "details"
                         , disabled: not state.editable
                         }
+                    , DOM.br {}
+                    , DOM.text "Address"
                     , Input.input 
                         { onChange: React.send self <<< OnStreetAddress
                         , id: "streetAddress"
                         , placeHolder: "Street Address"
                         , type: "text"
                         , defaultValue: fromMaybe "" state.streetAddress
-                        , className: Nothing
+                        , className: Just "details"
                         , disabled: not state.editable
                         }
                     , Input.input 
@@ -243,7 +247,7 @@ detailsView self@{ state } = classy DOM.div "mdl-grid mdl-grid--no-spacing child
                         , placeHolder: "Street Name"
                         , type: "text"
                         , defaultValue: fromMaybe "" state.streetName
-                        , className: Nothing
+                        , className: Just "details"
                         , disabled: not state.editable
                         }
                     , Input.input 
@@ -252,7 +256,7 @@ detailsView self@{ state } = classy DOM.div "mdl-grid mdl-grid--no-spacing child
                         , placeHolder: "Zip Code"
                         , type: "text"
                         , defaultValue: fromMaybe "" state.zipCode
-                        , className: Nothing
+                        , className: Just "details"
                         , disabled: not state.editable
                         }
                     , Input.input 
@@ -261,9 +265,14 @@ detailsView self@{ state } = classy DOM.div "mdl-grid mdl-grid--no-spacing child
                         , placeHolder: "Country Code"
                         , type: "text"
                         , defaultValue: fromMaybe "" state.countryCode
-                        , className: Nothing
+                        , className: Just "details"
                         , disabled: not state.editable
                         }
+                    , DOM.br {}
+                    , DOM.text "Email"
+                    , DOM.br {}
+                    , DOM.text $ fromMaybe "" state.email
+                    , DOM.br {}
                     , DOM.br {}
                     , DOM.br {}
                     , DOM.button
@@ -384,6 +393,7 @@ loginUserDetails self loginConfig = Aff.launchAff_ $ axios loginConfig >>= liftE
                                             , streetName = Just b.address.streetName
                                             , zipCode = Just b.address.zipCode
                                             , countryCode = Just b.address.countryCode
+                                            , email = Just b.email
                                             }
               React.send self (LoadState updatedState)
 

@@ -65,7 +65,7 @@ input = React.make component
 
 render :: Self Props State Action -> JSX
 render self@{ props } = DOM.div 
-    { className: "textfield " <> (fromMaybe "" props.className)
+    { className: fromMaybe "textfield" props.className
     , style: DOM.css { position: "relative", marginBottom: "10px" }
     , children: 
         [ DOM.input
@@ -73,6 +73,7 @@ render self@{ props } = DOM.div
             , type: props.type
             , id: props.id
             , name: props.id
+            , placeholder: props.placeHolder
             , disabled: props.disabled
             , autoComplete: "off"
             , value: props.defaultValue

@@ -39,6 +39,7 @@ instance encodeDetailsReq :: Encode DetailsReq where encode = genericEncode (def
 newtype DetailsRes = DetailsRes 
   { firstName :: String
   , lastName :: String
+  , email :: String
   , address :: 
       { streetAddress :: String
       , streetName :: String
