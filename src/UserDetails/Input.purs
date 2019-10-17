@@ -58,29 +58,10 @@ input = React.make component
     
     update self@{ state } action = case action of
 
-      -- LoadState loadedState -> Update loadedState
       LoadState loadedState -> UpdateAndSideEffects loadedState (const $ updateDom)
       
-
       _ -> NoUpdate
 
--- render :: Self Props State Action -> JSX
--- render self@{ props } = classy DOM.div "mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
---     [ DOM.input
---       { className: "mdl-textfield__input"
---       , type: props.type
---       , id: props.id
---       , name: props.id
---       , autoComplete: "off"
---       , value: props.defaultValue
---       , onChange
---       }
---     , DOM.label
---       { className: "mdl-textfield__label"
---       , htmlFor: props.id
---       , children: [ DOM.text props.placeHolder ]
---       }
---     ]
 render :: Self Props State Action -> JSX
 render self@{ props } = DOM.div 
     { className: "textfield " <> (fromMaybe "" props.className)

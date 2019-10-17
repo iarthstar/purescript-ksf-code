@@ -7,11 +7,13 @@ import Effect.Console
 import Prelude
 import UserDetails.Types
 
-import Data.Array as Array
+import Data.Array
 import Data.Either (Either(..))
+import Data.Foldable
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Nullable (toNullable)
 import Data.String as String
+import Data.Tuple
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as Aff
@@ -69,7 +71,6 @@ data Action
   | OnZipCode (Maybe String)
   | OnCountryCode (Maybe String)
   | OnUsername (Maybe String)
-  | OnUserName (Maybe String)
   | OnPassword (Maybe String)
   | OnLogin
   | OnLogout
@@ -89,17 +90,17 @@ app = React.make component
 
 -- | Pure render function
 render :: Self Props State Action -> JSX
-render self = 
+render self@{ state } = 
     classy DOM.div "parent"
       ([ 
       -- | Loading View
         DOM.div
           { className: "lParent"
           , id: "loading"
-          , style: DOM.css { display: if self.state.isLoading then "block" else "none" }
+          , style: DOM.css { display: if state.isLoading then "block" else "none" }
           , children: [ classy DOM.div "mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active lChild" [] ]
           }
-      ] <> if self.state.loggedIn 
+      ] <> if state.loggedIn 
         then  
           -- | Details View
           [ classy DOM.div "mdl-grid mdl-grid--no-spacing child"
@@ -117,7 +118,7 @@ render self =
                                   , id: "firstName"
                                   , placeHolder: "First Name"
                                   , type: "text"
-                                  , defaultValue: fromMaybe "" self.state.firstName
+                                  , defaultValue: fromMaybe "" state.firstName
                                   , className: Nothing
                                   }
                               , Input.input 
@@ -125,7 +126,7 @@ render self =
                                   , id: "lastName"
                                   , placeHolder: "Last Name"
                                   , type: "text"
-                                  , defaultValue: fromMaybe "" self.state.lastName
+                                  , defaultValue: fromMaybe "" state.lastName
                                   , className: Nothing
                                   }
                               , Input.input 
@@ -133,7 +134,7 @@ render self =
                                   , id: "streetAddress"
                                   , placeHolder: "Street Address"
                                   , type: "text"
-                                  , defaultValue: fromMaybe "" self.state.streetAddress
+                                  , defaultValue: fromMaybe "" state.streetAddress
                                   , className: Nothing
                                   }
                               , Input.input 
@@ -141,7 +142,7 @@ render self =
                                   , id: "streetName"
                                   , placeHolder: "Street Name"
                                   , type: "text"
-                                  , defaultValue: fromMaybe "" self.state.streetName
+                                  , defaultValue: fromMaybe "" state.streetName
                                   , className: Nothing
                                   }
                               , Input.input 
@@ -149,7 +150,7 @@ render self =
                                   , id: "zipCode"
                                   , placeHolder: "Zip Code"
                                   , type: "text"
-                                  , defaultValue: fromMaybe "" self.state.zipCode
+                                  , defaultValue: fromMaybe "" state.zipCode
                                   , className: Nothing
                                   }
                               , Input.input 
@@ -157,7 +158,7 @@ render self =
                                   , id: "countryCode"
                                   , placeHolder: "Country Code"
                                   , type: "text"
-                                  , defaultValue: fromMaybe "" self.state.countryCode
+                                  , defaultValue: fromMaybe "" state.countryCode
                                   , className: Nothing
                                   }
                               , DOM.br {}
@@ -184,48 +185,25 @@ render self =
         else
           -- | Login View
             [ loginView self ]
-          -- [ classy DOM.div "mdl-grid mdl-grid--no-spacing child"
-          --     [ classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
-          --     , classy DOM.div "mdl-cell mdl-cell--4-col-tablet  mdl-cell--4-col-desktop mdl-cell--4-col-phone"
-          --         [ classy DOM.div "mdl-card mdl-shadow--4dp"
-          --             [ classy DOM.div "mdl-card__supporting-text"
-          --                 [ DOM.form 
-          --                     { action: "javascript:void(0);"
-          --                     , children: 
-          --                         [ Input.input 
-          --                             { onChange: React.send self <<< OnUsername
-          --                             , id: "username"
-          --                             , placeHolder: "Username"
-          --                             , defaultValue: fromMaybe "" self.state.username
-          --                             , type: "text"
-          --                             } 
-          --                         , DOM.br {}
-          --                         , Input.input
-          --                             { onChange: React.send self <<< OnPassword
-          --                             , id: "password"
-          --                             , placeHolder: "Password"
-          --                             , defaultValue: fromMaybe "" self.state.password
-          --                             , type: "password"
-          --                             }
-          --                         , DOM.br {}
-          --                         , DOM.br {}
-          --                         , DOM.button
-          --                             { className: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
-          --                             , onClick: React.capture_ self OnLogin
-          --                             , children: [ DOM.text "LOGIN" ]
-          --                             }
-          --                         ]
-          --                     }
-          --                 ]
-          --             ]
-          --         ]
-          --     , classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
-          --     ]
-          -- ]
       )
 
+links :: Array (Tuple String String)
+links = [ Tuple "Frågor och svar" "https://www.hbl.fi/fragor-och-svar/"
+        , Tuple "Ingen tidning" "https://www.hbl.fi/ingen-tidning/"
+        , Tuple "Läs e-tidning" "https://www.hbl.fi/epaper/" 
+        ]
+
+anchor :: String -> String -> JSX
+anchor text href = DOM.a { className: "href-link", href, children: [ DOM.text text ]}
+
+makeLinksWithBullets :: Int -> Tuple String String -> Array JSX
+makeLinksWithBullets index (Tuple text link) = case mod index 2 of 
+    0 ->  [ anchor text link ]
+    _ ->  [ DOM.text " • "
+          , anchor text link ]
+
 loginView :: Self Props State Action -> JSX
-loginView self = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
+loginView self@{ state } = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
         [ classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
         , classy DOM.div "mdl-cell mdl-cell--4-col-tablet  mdl-cell--4-col-desktop mdl-cell--4-col-phone"
             [ classy DOM.div ""
@@ -234,25 +212,7 @@ loginView self = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
                         [ DOM.text "Välkommen till KSF Media’s Mitt Konto"] 
                     ]
                 , classy DOM.div "mdl-card__supporting-text text-center" 
-                    [ classy DOM.p "full-width inline-block" 
-                        [ DOM.a
-                          { className: "href-link"
-                          , href: "https://www.hbl.fi/fragor-och-svar/"
-                          , children: [ DOM.text "Frågor och svar" ]
-                          }
-                        , DOM.text " • "
-                        , DOM.a
-                          { className: "href-link"
-                          , href: "https://www.hbl.fi/ingen-tidning/"
-                          , children: [ DOM.text "Ingen tidning" ]
-                          }
-                        , DOM.text " • "
-                        , DOM.a
-                          { className: "href-link"
-                          , href: "https://www.hbl.fi/epaper/"
-                          , children: [ DOM.text "Läs e-tidning" ]
-                          }
-                        ]
+                    [ classy DOM.p "full-width inline-block" (concat $ mapWithIndex makeLinksWithBullets links)
                     , classy DOM.p "full-width inline-block"
                         [ DOM.text "Här kan du göra tillfällig eller permanent adressändring eller göra uppehåll i tidningsutdelningen. Dessutom kan du få allmän information som är relevant för dig som prenumerant." ]
                     , DOM.br {}
@@ -261,11 +221,7 @@ loginView self = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
                         [ DOM.text "Allt du behöver göra för att komma igång är att logga in! " ]
                     , classy DOM.p "full-width inline-block"
                         [ DOM.text "Behöver du hjälp? "
-                        , DOM.a
-                          { className: "href-link"
-                          , href: "https://www.hbl.fi/kundservice/"
-                          , children: [ DOM.text "Kundservice" ]
-                          }
+                        , anchor "Kundservice" "https://www.hbl.fi/kundservice/"    
                         ]
                     , classy DOM.div "mdl-grid mdl-grid--no-spacing"
                         [ classy DOM.div "mdl-cell mdl-cell--1-col-tablet  mdl-cell--2-col-desktop mdl-cell--0-col-phone" []
@@ -278,7 +234,7 @@ loginView self = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
                                         , id: "username"
                                         , placeHolder: "Username"
                                         , type: "text"
-                                        , defaultValue: fromMaybe "" self.state.username
+                                        , defaultValue: fromMaybe "" state.username
                                         , className: Just "email"
                                         }
                                     , Input.input
@@ -286,7 +242,7 @@ loginView self = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
                                         , id: "password"
                                         , placeHolder: "Password"
                                         , type: "password"
-                                        , defaultValue: fromMaybe "" self.state.password
+                                        , defaultValue: fromMaybe "" state.password
                                         , className: Just "pass"
                                         }
                                     , DOM.button
@@ -296,7 +252,6 @@ loginView self = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
                                         , children: [ DOM.text "LOGGA IN" ]
                                         }   
                                     ]
-        
                                 }
                             ]
                         , classy DOM.div "mdl-cell mdl-cell--1-col-tablet  mdl-cell--2-col-desktop mdl-cell--0-col-phone" []
@@ -313,9 +268,6 @@ update :: Self Props State Action -> Action -> StateUpdate Props State Action
 update self@{ state } action = case action of
 
     OnUsername value -> Update self.state { username = value }
-    OnUserName value -> do
-      let _ = spy "UserName" value
-      Update self.state { username = value }
     
     OnPassword value -> Update self.state { password = value }        
     
@@ -343,8 +295,6 @@ update self@{ state } action = case action of
                 , headers:  [ Header "Cache-Control" "no-cache"
                             , Header "Content-Type" "application/json"
                             , Header "accept" "application/json;charset=utf-8"
-                            -- , Header "Access-Control-Allow-Origin" "*"
-                            -- , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
                           ]
                 , data: LoginReq { username, password }
                 }
@@ -371,8 +321,6 @@ update self@{ state } action = case action of
               , headers:  [ Header "accept" "application/json;charset=utf-8"
                           , Header "Content-Type" "application/json"
                           , Header "Authorization" ("OAuth " <> token) 
-                          -- , Header "Access-Control-Allow-Origin" "*"
-                          -- , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
                           ]
               , data: patchDetailsReq
               }
@@ -394,8 +342,6 @@ loginUserDetails self loginConfig = Aff.launchAff_ $ axios loginConfig >>= liftE
               , headers:  [ Header "Cache-Control" "no-cache"
                           , Header "accept" "application/json;charset=utf-8"
                           , Header "Authorization" ("OAuth " <> a.token)
-                          -- , Header "Access-Control-Allow-Origin" "*"
-                          -- , Header "Access-Control-Allow-Methods" "POST, GET, PATCH"
                           ]
               , data: DetailsReq {}
               }

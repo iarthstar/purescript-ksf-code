@@ -15,6 +15,9 @@
     , "react-basic"
     , "simple-json"
     , "strings"
+    , "foldable-traversable"
+    , "tuples"
+    , "arrays"
     ]
 , packages =
     ./packages.dhall
