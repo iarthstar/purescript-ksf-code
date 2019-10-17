@@ -4,18 +4,29 @@ A KSF Frontend User Details Management in [PureScript](http://www.purescript.org
 
 You can see this deployed at [`purescript-ksf-code.netlify.com`](https://purescript-ksf-code.netlify.com/)
 
-## Development
+## Development Guide
+
+#### NOTE : Please make sure you have yarn :: [Installing yarn](https://yarnpkg.com/en/docs/install)
+
+* Initial setup
 
 ```bash
-## Install npm dependencies, PureScript compiler, etc
-yarn install
+$ yarn install
+```
 
-## Build the PureScript project
-yarn build
+* Build
 
-## Start the dev server with hot reload and stuff
-## (that is, if you use `purs ide` that recompiles your stuff on save)
-## Note that hot-reload won't work if you change any FFI file,
-## so you'll have to `yarn build` again
-yarn start
+```bash
+$ yarn build
+```
+
+* To watch for changes
+
+```bash
+$ yarn watch
+```
+
+* To Run Server
+```bash
+$ yarn start
 ```
