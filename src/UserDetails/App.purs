@@ -40,6 +40,7 @@ type State =
   , streetName    :: Maybe String 
   , zipCode       :: Maybe String 
   , countryCode   :: Maybe String 
+  , editable      :: Boolean
   , isLoading     :: Boolean
   , loggedIn      :: Boolean
   }
@@ -56,6 +57,7 @@ initialState =
   , streetName    : Nothing
   , zipCode       : Nothing
   , countryCode   : Nothing
+  , editable      : false
   , isLoading     : false
   , loggedIn      : false
   }
@@ -72,6 +74,7 @@ data Action
   | OnCountryCode (Maybe String)
   | OnUsername (Maybe String)
   | OnPassword (Maybe String)
+  | OnEdit
   | OnLogin
   | OnLogout
   | OnSubmit
@@ -103,84 +106,7 @@ render self@{ state } =
       ] <> if state.loggedIn 
         then  
           -- | Details View
-          [ classy DOM.div "mdl-grid mdl-grid--no-spacing child"
-              [ classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
-              , classy DOM.div "mdl-cell mdl-cell--4-col-tablet  mdl-cell--4-col-desktop mdl-cell--4-col-phone"
-                  [ classy DOM.div "mdl-card mdl-shadow--4dp"
-                      [ classy DOM.div "mdl-card__title"
-                          [ classy DOM.h2 "mdl-card__title-text" [ DOM.text "User Details" ] ]
-                      , classy DOM.div "mdl-card__supporting-text"
-                          [ DOM.form 
-                            { action: "javascript:void(0);"
-                            , children: 
-                                [ Input.input 
-                                  { onChange: React.send self <<< OnFirstName
-                                  , id: "firstName"
-                                  , placeHolder: "First Name"
-                                  , type: "text"
-                                  , defaultValue: fromMaybe "" state.firstName
-                                  , className: Nothing
-                                  }
-                              , Input.input 
-                                  { onChange: React.send self <<< OnLastName
-                                  , id: "lastName"
-                                  , placeHolder: "Last Name"
-                                  , type: "text"
-                                  , defaultValue: fromMaybe "" state.lastName
-                                  , className: Nothing
-                                  }
-                              , Input.input 
-                                  { onChange: React.send self <<< OnStreetAddress
-                                  , id: "streetAddress"
-                                  , placeHolder: "Street Address"
-                                  , type: "text"
-                                  , defaultValue: fromMaybe "" state.streetAddress
-                                  , className: Nothing
-                                  }
-                              , Input.input 
-                                  { onChange: React.send self <<< OnStreetName
-                                  , id: "streetName"
-                                  , placeHolder: "Street Name"
-                                  , type: "text"
-                                  , defaultValue: fromMaybe "" state.streetName
-                                  , className: Nothing
-                                  }
-                              , Input.input 
-                                  { onChange: React.send self <<< OnZipCode
-                                  , id: "zipCode"
-                                  , placeHolder: "Zip Code"
-                                  , type: "text"
-                                  , defaultValue: fromMaybe "" state.zipCode
-                                  , className: Nothing
-                                  }
-                              , Input.input 
-                                  { onChange: React.send self <<< OnCountryCode
-                                  , id: "countryCode"
-                                  , placeHolder: "Country Code"
-                                  , type: "text"
-                                  , defaultValue: fromMaybe "" state.countryCode
-                                  , className: Nothing
-                                  }
-                              , DOM.br {}
-                              , DOM.br {}
-                              , DOM.button
-                                  { className: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
-                                  , onClick: React.capture_ self OnSubmit
-                                  , children: [ DOM.text "SUBMIT" ]
-                                  }
-                              , DOM.button
-                                  { className: "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
-                                  , style: DOM.css { float: "right" }
-                                  , onClick: React.capture_ self OnLogout
-                                  , children: [ DOM.text "LOGOUT" ]
-                                  }
-                              ]
-                          }
-                        ]
-                      ]
-                  ]
-              , classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
-              ]
+          [ detailsView self
           ]
         else
           -- | Login View
@@ -204,65 +130,161 @@ makeLinksWithBullets index (Tuple text link) = case mod index 2 of
 
 loginView :: Self Props State Action -> JSX
 loginView self@{ state } = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
-        [ classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
-        , classy DOM.div "mdl-cell mdl-cell--4-col-tablet  mdl-cell--4-col-desktop mdl-cell--4-col-phone"
-            [ classy DOM.div ""
-                [ classy DOM.div "mdl-card__title full-width font-duplex-bold text-center"
-                    [ classy DOM.p "mdl-card__title-text full-width inline-block" 
-                        [ DOM.text "Välkommen till KSF Media’s Mitt Konto"] 
+    [ classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
+    , classy DOM.div "mdl-cell mdl-cell--4-col-tablet  mdl-cell--4-col-desktop mdl-cell--4-col-phone"
+        [ classy DOM.div ""
+            [ classy DOM.div "mdl-card__title full-width font-duplex-bold text-center"
+                [ classy DOM.p "mdl-card__title-text full-width inline-block" 
+                    [ DOM.text "Välkommen till KSF Media’s Mitt Konto"] 
+                ]
+            , classy DOM.div "mdl-card__supporting-text text-center" 
+                [ classy DOM.p "full-width inline-block" (concat $ mapWithIndex makeLinksWithBullets links)
+                , classy DOM.p "full-width inline-block"
+                    [ DOM.text "Här kan du göra tillfällig eller permanent adressändring eller göra uppehåll i tidningsutdelningen. Dessutom kan du få allmän information som är relevant för dig som prenumerant." ]
+                , DOM.br {}
+                , DOM.br {}
+                , classy DOM.p "full-width inline-block"
+                    [ DOM.text "Allt du behöver göra för att komma igång är att logga in! " ]
+                , classy DOM.p "full-width inline-block"
+                    [ DOM.text "Behöver du hjälp? "
+                    , anchor "Kundservice" "https://www.hbl.fi/kundservice/"    
                     ]
-                , classy DOM.div "mdl-card__supporting-text text-center" 
-                    [ classy DOM.p "full-width inline-block" (concat $ mapWithIndex makeLinksWithBullets links)
-                    , classy DOM.p "full-width inline-block"
-                        [ DOM.text "Här kan du göra tillfällig eller permanent adressändring eller göra uppehåll i tidningsutdelningen. Dessutom kan du få allmän information som är relevant för dig som prenumerant." ]
-                    , DOM.br {}
-                    , DOM.br {}
-                    , classy DOM.p "full-width inline-block"
-                        [ DOM.text "Allt du behöver göra för att komma igång är att logga in! " ]
-                    , classy DOM.p "full-width inline-block"
-                        [ DOM.text "Behöver du hjälp? "
-                        , anchor "Kundservice" "https://www.hbl.fi/kundservice/"    
+                , classy DOM.div "mdl-grid mdl-grid--no-spacing"
+                    [ classy DOM.div "mdl-cell mdl-cell--1-col-tablet  mdl-cell--2-col-desktop mdl-cell--0-col-phone" []
+                    , classy DOM.div "mdl-cell mdl-cell--6-col-tablet  mdl-cell--8-col-desktop mdl-cell--4-col-phone" 
+                        [ DOM.form
+                            { action: "javascript:void(0);"
+                            , children: 
+                                [ Input.input
+                                    { onChange: React.send self <<< OnUsername
+                                    , id: "username"
+                                    , placeHolder: "Username"
+                                    , type: "text"
+                                    , defaultValue: fromMaybe "" state.username
+                                    , className: Just "email"
+                                    , disabled: false
+                                    }
+                                , Input.input
+                                    { onChange: React.send self <<< OnPassword
+                                    , id: "password"
+                                    , placeHolder: "Password"
+                                    , type: "password"
+                                    , defaultValue: fromMaybe "" state.password
+                                    , className: Just "pass"
+                                    , disabled: false
+                                    }
+                                , DOM.button
+                                    { className: "button"
+                                    , style: DOM.css { width: "100%" }
+                                    , onClick: React.capture_ self OnLogin
+                                    , children: [ DOM.text "LOGGA IN" ]
+                                    }   
+                                ]
+                            }
                         ]
-                    , classy DOM.div "mdl-grid mdl-grid--no-spacing"
-                        [ classy DOM.div "mdl-cell mdl-cell--1-col-tablet  mdl-cell--2-col-desktop mdl-cell--0-col-phone" []
-                        , classy DOM.div "mdl-cell mdl-cell--6-col-tablet  mdl-cell--8-col-desktop mdl-cell--4-col-phone" 
-                            [ DOM.form
-                                { action: "javascript:void(0);"
-                                , children: 
-                                    [ Input.input
-                                        { onChange: React.send self <<< OnUsername
-                                        , id: "username"
-                                        , placeHolder: "Username"
-                                        , type: "text"
-                                        , defaultValue: fromMaybe "" state.username
-                                        , className: Just "email"
-                                        }
-                                    , Input.input
-                                        { onChange: React.send self <<< OnPassword
-                                        , id: "password"
-                                        , placeHolder: "Password"
-                                        , type: "password"
-                                        , defaultValue: fromMaybe "" state.password
-                                        , className: Just "pass"
-                                        }
-                                    , DOM.button
-                                        { className: "button"
-                                        , style: DOM.css { width: "100%" }
-                                        , onClick: React.capture_ self OnLogin
-                                        , children: [ DOM.text "LOGGA IN" ]
-                                        }   
-                                    ]
-                                }
-                            ]
-                        , classy DOM.div "mdl-cell mdl-cell--1-col-tablet  mdl-cell--2-col-desktop mdl-cell--0-col-phone" []
-                        ]
+                    , classy DOM.div "mdl-cell mdl-cell--1-col-tablet  mdl-cell--2-col-desktop mdl-cell--0-col-phone" []
                     ]
                 ]
             ]
-        , classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
         ]
-      
-      
+    , classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
+    ]
+
+
+detailsView :: Self Props State Action -> JSX
+detailsView self@{ state } = classy DOM.div "mdl-grid mdl-grid--no-spacing child"
+    [ classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
+    , classy DOM.div "mdl-cell mdl-cell--4-col-tablet  mdl-cell--4-col-desktop mdl-cell--4-col-phone"
+        [ classy DOM.div "mdl-card"
+            [ classy DOM.div "mdl-card__title"
+                [ classy DOM.h2 "mdl-card__title-text full-width inline-block" 
+                  [ DOM.text "User Details" 
+                  , DOM.button
+                      { className: "button"
+                      , style: DOM.css { width: "60px", float: "right", fontSize: "0.8em", marginRight: "4.5%" }
+                      , onClick: React.capture_ self OnEdit
+                      , children: [ classy DOM.i "material-icons" [ DOM.text if state.editable then "done" else "edit" ] ]
+                      }
+                  ] ]
+            , classy DOM.div "mdl-card__supporting-text"
+                [ DOM.form 
+                  { action: "javascript:void(0);"
+                  , children: 
+                      [ Input.input 
+                        { onChange: React.send self <<< OnFirstName
+                        , id: "firstName"
+                        , placeHolder: "First Name"
+                        , type: "text"
+                        , defaultValue: fromMaybe "" state.firstName
+                        , className: Nothing
+                        , disabled: not state.editable
+                        }
+                    , Input.input 
+                        { onChange: React.send self <<< OnLastName
+                        , id: "lastName"
+                        , placeHolder: "Last Name"
+                        , type: "text"
+                        , defaultValue: fromMaybe "" state.lastName
+                        , className: Nothing
+                        , disabled: not state.editable
+                        }
+                    , Input.input 
+                        { onChange: React.send self <<< OnStreetAddress
+                        , id: "streetAddress"
+                        , placeHolder: "Street Address"
+                        , type: "text"
+                        , defaultValue: fromMaybe "" state.streetAddress
+                        , className: Nothing
+                        , disabled: not state.editable
+                        }
+                    , Input.input 
+                        { onChange: React.send self <<< OnStreetName
+                        , id: "streetName"
+                        , placeHolder: "Street Name"
+                        , type: "text"
+                        , defaultValue: fromMaybe "" state.streetName
+                        , className: Nothing
+                        , disabled: not state.editable
+                        }
+                    , Input.input 
+                        { onChange: React.send self <<< OnZipCode
+                        , id: "zipCode"
+                        , placeHolder: "Zip Code"
+                        , type: "text"
+                        , defaultValue: fromMaybe "" state.zipCode
+                        , className: Nothing
+                        , disabled: not state.editable
+                        }
+                    , Input.input 
+                        { onChange: React.send self <<< OnCountryCode
+                        , id: "countryCode"
+                        , placeHolder: "Country Code"
+                        , type: "text"
+                        , defaultValue: fromMaybe "" state.countryCode
+                        , className: Nothing
+                        , disabled: not state.editable
+                        }
+                    , DOM.br {}
+                    , DOM.br {}
+                    , DOM.button
+                        { className: "button"
+                        , style: DOM.css { width: "120px" }
+                        , onClick: React.capture_ self OnSubmit
+                        , children: [ DOM.text "SUBMIT" ]
+                        }
+                      , DOM.button
+                        { className: "button"
+                        , style: DOM.css { float: "right", width: "120px" }
+                        , onClick: React.capture_ self OnLogout
+                        , children: [ DOM.text "LOGOUT" ]
+                        }
+                    ]
+                }
+              ]
+            ]
+        ]
+    , classy DOM.div "mdl-cell mdl-cell--2-col-tablet  mdl-cell--4-col-desktop mdl-cell--0-col-phone" []
+    ]
 
 update :: Self Props State Action -> Action -> StateUpdate Props State Action
 update self@{ state } action = case action of
@@ -282,6 +304,10 @@ update self@{ state } action = case action of
     OnZipCode value -> Update self.state { zipCode = value }
     
     OnCountryCode value -> Update self.state { countryCode = value }
+
+    OnEdit -> case self.state.editable of
+        true -> Update self.state { editable = false }
+        false -> Update self.state { editable = true }
 
 
     OnLogin -> case state.username, state.password of

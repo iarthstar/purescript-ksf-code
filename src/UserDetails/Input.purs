@@ -32,6 +32,7 @@ type Props =
   , defaultValue :: String
   , type :: String
   , className :: Maybe String
+  , disabled :: Boolean
   }
 
 type State = { inputValue :: String }
@@ -72,6 +73,7 @@ render self@{ props } = DOM.div
             , type: props.type
             , id: props.id
             , name: props.id
+            , disabled: props.disabled
             , autoComplete: "off"
             , value: props.defaultValue
             , onChange
